@@ -81,7 +81,7 @@ export function Sidebar({ currentView, onNavigate, isOpen }: SidebarProps) {
           <span>ФЗ-152: Данные защищены</span>
         </div>
         <div className="mt-2 text-xs text-slate-400">
-          v2.1.0 • PostgreSQL 16 • YandexGPT
+          v2.1.0 • PostgreSQL 16 • DeepSeek AI
         </div>
       </div>
     </aside>

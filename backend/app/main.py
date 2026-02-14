@@ -54,6 +54,5 @@ async def health():
         "status": "ok",
         "version": settings.APP_VERSION,
         "pii_masking": settings.PII_MASKING_ENABLED,
-        "yandex_configured": settings.YANDEX_API_KEY is not None,
-        "gigachat_configured": settings.GIGACHAT_API_KEY is not None,
+        "deepseek_configured": settings.DEEPSEEK_API_KEY is not None,
     }

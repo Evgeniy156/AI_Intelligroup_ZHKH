@@ -1,15 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional
-from app.services.llm import llm_service
+from ..services.llm import llm_service
 
 router = APIRouter()
 
 class GenerateRequest(BaseModel):
     prompt: str
-    provider: str = "yandex"
-    alice_key: Optional[str] = None
-    gigachat_key: Optional[str] = None
+    provider: str = "deepseek"
+    deepseek_key: Optional[str] = None
 
 class GenerateResponse(BaseModel):
     content: str
@@ -19,16 +18,13 @@ class GenerateResponse(BaseModel):
 async def generate_text(request: GenerateRequest):
     """
     Эндпоинт для генерации текста через LLM.
-    Принимает промпт и необязательные ключи (если они переданы с фронтенда).
+    Принимает промпт и необязательный ключ DeepSeek.
     """
     try:
-        # Если ключи переданы в запросе, используем их
-        # В реальном приложении здесь должна быть более сложная логика приоритетов
         result = await llm_service.generate_response(
             prompt=request.prompt, 
             provider=request.provider,
-            yandex_key=request.alice_key,
-            gigachat_key=request.gigachat_key
+            deepseek_key=request.deepseek_key
         )
         return GenerateResponse(content=result, provider=request.provider)
     except Exception as e:

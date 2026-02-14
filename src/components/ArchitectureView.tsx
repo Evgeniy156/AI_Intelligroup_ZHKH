@@ -69,7 +69,7 @@ const techStack = [
     { name: "PostgreSQL 16", category: "Database", icon: Database },
     { name: "Redis", category: "Cache", icon: HardDrive },
     { name: "pgvector", category: "Database", icon: Database },
-    { name: "YandexGPT", category: "AI", icon: Brain },
+    { name: "DeepSeek AI", category: "AI", icon: Brain },
     { name: "LangChain", category: "AI", icon: Layers },
 ];
 
@@ -156,18 +156,11 @@ export function ArchitectureView() {
                             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Внешние API</span>
                         </div>
                         <ArchitectureCard
-                            title="YandexGPT API"
-                            subtitle="SaaS LLM Provider"
+                            title="DeepSeek AI API"
+                            subtitle="Primary SaaS LLM Provider"
                             icon={Brain}
                             color="rose"
-                            features={["Pro/Lite", "RF Compliant"]}
-                        />
-                        <ArchitectureCard
-                            title="GigaChat API"
-                            subtitle="Sber Devices"
-                            icon={Brain}
-                            color="rose"
-                            features={["Alternative", "RF Compliant"]}
+                            features={["OpenAI Compat", "Fast Inference"]}
                         />
                     </div>
                 </div>

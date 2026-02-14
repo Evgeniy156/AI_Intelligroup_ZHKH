@@ -134,8 +134,8 @@ class UserUpdate(BaseModel):
 
 
 class LLMSettingsSchema(BaseModel):
-    provider: str = "yandex"
-    model: str = "yandexgpt-pro"
+    provider: str = "deepseek"
+    model: str = "deepseek-chat"
     temperature: float = Field(ge=0.0, le=1.0, default=0.7)
     max_tokens: int = Field(ge=1, le=8192, default=2048)
 

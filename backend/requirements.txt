@@ -5,3 +5,5 @@ sqlalchemy[asyncio]
 asyncpg
 python-multipart
 python-dotenv
+httpx
+pgvector

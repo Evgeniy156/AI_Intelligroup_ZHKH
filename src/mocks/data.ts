@@ -172,8 +172,8 @@ export const mockUsers: User[] = [
 ];
 
 export const defaultLLMSettings: LLMSettings = {
-    provider: "yandex",
-    model: "yandexgpt-pro",
+    provider: "deepseek",
+    model: "deepseek-chat",
     temperature: 0.7,
     maxTokens: 2048,
 };

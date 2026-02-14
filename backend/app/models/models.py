@@ -9,6 +9,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, relationship
 import enum
 
+from pgvector.sqlalchemy import Vector
 
 class Base(DeclarativeBase):
     pass
@@ -77,3 +78,17 @@ class Document(Base):
     storage_path = Column(Text)
     analysis_result = Column(Text)  # JSON строка
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    chunks = relationship("DocumentChunk", back_populates="document")
+
+
+class DocumentChunk(Base):
+    __tablename__ = "document_chunks"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    document_id = Column(UUID(as_uuid=True), ForeignKey("documents.id"), nullable=False)
+    content = Column(Text, nullable=False)
+    embedding = Column(Vector(1536))  # 1536 — размерность для OpenAI/DeepSeek или 1024 для Yandex
+    meta_info = Column(Text)  # JSON с доп. инфо (статья, пункт)
+
+    document = relationship("Document", back_populates="chunks")
