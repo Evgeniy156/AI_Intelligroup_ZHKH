@@ -37,7 +37,7 @@ export function LegalConsultantModule() {
         risks: any[];
       }>("/api/v1/legal/ask", {
         query: query,
-        provider: "gigachat"
+        provider: "deepseek"
       });
 
       setAnswer(response.answer);
@@ -61,7 +61,7 @@ export function LegalConsultantModule() {
         </div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1.5 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">
-            GigaChat Max
+            DeepSeek AI
           </span>
         </div>
       </div>

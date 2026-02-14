@@ -5,27 +5,26 @@
 ### Клиентская часть (Frontend App)
 *   **Технологии**: React + TypeScript
 *   **Особенности**: 
-    *   SPA
-    *   Tailwind CSS
-    *   REST API
+    *   Одностраничное приложение (SPA)
+    *   Tailwind CSS для стилизации
+    *   Взаимодействие через REST API
 
 ### API Слой
-*   **Nginx Proxy**: Reverse Proxy, Load Balancing, SSL Termination
-*   **FastAPI Backend**: Python 3.11+, Async/Await, JWT Auth, RBAC
+*   **Nginx Proxy**: Обратный прокси, балансировка нагрузки, терминация SSL
+*   **FastAPI Backend**: Python 3.11+, асинхронная обработка, авторизация JWT, ролевая модель доступа (RBAC)
 
-### AI Core
-*   **AI Orchestrator**: LangChain / LangGraph, Prompt Chains, Context Mgmt
-*   **RAG Engine**: Vector Search, pgvector, Embeddings, Similarity
-*   **PII Masking**: Data Sanitizer, NER, Tokenization, ФЗ-152
+### AI Core (Ядро ИИ)
+*   **AI Orchestrator**: Управление цепочками промптов и контекстом
+*   **RAG Engine**: Векторный поиск, pgvector, эмбеддинги, поиск по сходству
+*   **PII Masking**: Санитайзер данных, распознавание сущностей (NER), токенизация, соблюдение ФЗ-152
 
 ### Внешние API
-*   **YandexGPT API**: SaaS LLM Provider (Pro/Lite), RF Compliant
-*   **GigaChat API**: Sber Devices, Alternative, RF Compliant
+*   **DeepSeek AI**: Основной SaaS LLM провайдер, используется для генерации ответов и юридических консультаций.
 
 ### Хранение данных
-*   **PostgreSQL 16**: Relational + Vector (pgvector), RLS, Мulti-tenant
-*   **Redis**: Cache + Broker, Cache, Celery Queue, Sessions
-*   **S3 Storage**: Document Storage, Documents, Backups, Encrypted
+*   **PostgreSQL 16**: Реляционная БД + векторное расширение (pgvector), изоляция данных (RLS), мультиарендность
+*   **Redis**: Кэширование, брокер сообщений, очереди Celery, управление сессиями
+*   **S3 Storage**: Хранилище документов, резервные копии, шифрование данных
 
 ## Технологический стек
 *   React 18
@@ -36,25 +35,25 @@
 *   PostgreSQL 16
 *   Redis
 *   pgvector
-*   YandexGPT
-*   LangChain
+*   DeepSeek AI
+*   httpx (Библиотека для API запросов)
 
 ## Безопасность и ФЗ-152
-*   **PII Маскирование**: ФИО и телефоны заменяются токенами перед отправкой в LLM
-*   **Row-Level Security**: Изоляция данных между организациями на уровне БД
-*   **TLS 1.3**: Шифрование данных при передаче
-*   **Шифрование дисков**: AES-256 для данных в покое
+*   **PII Маскирование**: ФИО, адреса и телефоны заменяются токенами перед отправкой во внешние LLM
+*   **Row-Level Security (RLS)**: Строгая изоляция данных между разными управляющими компаниями на уровне БД
+*   **TLS 1.3**: Шифрование данных при передаче в сети
+*   **Шифрование данных**: AES-256 для защиты данных в состоянии покоя
 
 ## Архитектурные принципы
-*   **SaaS Multi-tenant**: Единая инсталляция для множества УК/ТСЖ
-*   **API First**: REST API между фронтендом и бэкендом
-*   **Asynchronous AI**: Неблокирующая генерация ответов через очередь
-*   **Scalable Architecture**: Простота развертывания с возможностью масштабирования
+*   **SaaS Multi-tenant**: Единое облачное решение для множества клиентов (УК/ТСЖ)
+*   **API First**: Четкое разделение фронтенда и бэкенда через REST API
+*   **Asynchronous AI**: Фоновая генерация ответов через очереди задач для высокой отзывчивости
+*   **Scalable Architecture**: Масштабируемая инфраструктура с возможностью горизонтального роста
 
 ## Поток обработки запроса
-1. Обращение
-2. PII Маскирование
-3. RAG Поиск
-4. LLM Генерация
-5. Валидация
-6. Демаскирование
+1. Поступление обращения
+2. Маскирование персональных данных (ФЗ-152)
+3. Поиск контекста в базе знаний (RAG)
+4. Генерация ответа через DeepSeek AI
+5. Валидация и проверка ответа
+6. Демаскирование (возврат ФИО/данных) для пользователя

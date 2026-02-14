@@ -30,17 +30,15 @@ export function RequestResponseModule() {
       setTimeout(() => setStep(2), 600);
       setTimeout(() => setStep(3), 1200);
 
-      const alice_api_key = localStorage.getItem("alice_ai_key");
-      const gigachat_api_key = localStorage.getItem("gigachat_key");
+      const deepseek_api_key = localStorage.getItem("deepseek_key");
 
       const { post } = await import("@/api/client");
 
       setStep(4);
       const response = await post<{ content: string; provider: string }>("/api/v1/llm/generate", {
         prompt: inputText,
-        provider: "yandex", // По умолчанию
-        alice_key: alice_api_key,
-        gigachat_key: gigachat_api_key
+        provider: "deepseek",
+        deepseek_key: deepseek_api_key,
       });
 
       setStep(5);
@@ -78,7 +76,7 @@ export function RequestResponseModule() {
         </div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1.5 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
-            YandexGPT Pro
+            DeepSeek AI
           </span>
         </div>
       </div>

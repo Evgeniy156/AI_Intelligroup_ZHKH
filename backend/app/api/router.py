@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from app.api.llm import router as llm_router
-from app.api.legal import router as legal_router
+from .llm import router as llm_router
+from .legal import router as legal_router
 
 api_router = APIRouter()
 

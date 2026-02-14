@@ -108,7 +108,7 @@ export interface User {
 }
 
 export interface LLMSettings {
-    provider: "yandex" | "sber";
+    provider: "yandex" | "sber" | "deepseek";
     model: string;
     temperature: number;
     maxTokens: number;

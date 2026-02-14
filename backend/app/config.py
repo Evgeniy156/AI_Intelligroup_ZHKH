@@ -3,9 +3,7 @@
 # ============================================================
 # Все API-ключи задаются через .env файл или переменные окружения.
 # Пример:
-#   YANDEX_API_KEY=AQVN...
-#   YANDEX_FOLDER_ID=b1g...
-#   GIGACHAT_API_KEY=...
+#   DEEPSEEK_API_KEY=sk-...
 # ============================================================
 
 from pydantic_settings import BaseSettings
@@ -29,14 +27,12 @@ class Settings(BaseSettings):
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
-    # --- YandexGPT (через yandex-ai-studio-sdk) ---
-    YANDEX_API_KEY: Optional[str] = None          # API-ключ YandexGPT
-    YANDEX_FOLDER_ID: Optional[str] = None        # ID каталога в Yandex Cloud
-    YANDEX_GPT_MODEL: str = "yandexgpt"           # Имя модели
 
-    # --- GigaChat (Сбер) ---
-    GIGACHAT_API_KEY: Optional[str] = None         # API-ключ GigaChat
-    GIGACHAT_MODEL: str = "GigaChat-Pro"           # Имя модели
+    # --- DeepSeek ---
+    DEEPSEEK_API_KEY: Optional[str] = None
+    DEEPSEEK_API_BASE: str = "https://api.deepseek.com"
+    DEEPSEEK_MODEL: str = "deepseek-chat"
+
 
     # --- Security ---
     ALLOWED_ORIGINS: list[str] = ["http://localhost:5173"]
