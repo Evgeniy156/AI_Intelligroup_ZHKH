@@ -20,7 +20,8 @@ class LLMService:
         Универсальный метод генерации ответа. Использует DeepSeek как основной движок.
         """
         # 1. Маскируем данные перед отправкой
-        masked_prompt = self._mask_pii(prompt)
+        from .pii import pii_service
+        masked_prompt, mapping = pii_service.mask(prompt)
         
         # 2. Выбираем ключ
         ds_key = deepseek_key or self.deepseek_key
@@ -32,13 +33,11 @@ class LLMService:
 
     def _mask_pii(self, text: str) -> str:
         """
-        Простейшее маскирование (заглушка для демонстрации).
+        Устаревший метод, заменен на PIIService.
         """
-        # Маскируем телефоны
-        text = re.sub(r'(\+7|8)[\s\-]?\(?\d{3}\)?[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}', '[PHONE_HIDDEN]', text)
-        # Маскируем email
-        text = re.sub(r'[\w\.-]+@[\w\.-]+\.\w+', '[EMAIL_HIDDEN]', text)
-        return text
+        from .pii import pii_service
+        masked, _ = pii_service.mask(text)
+        return masked
 
     async def _call_deepseek(self, prompt: str, key: Optional[str]) -> str:
         if not key:

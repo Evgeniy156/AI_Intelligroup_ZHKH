@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   FileCheck,
   Upload,
@@ -16,74 +16,72 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import type { DocumentRequirement, AuditCheck } from "@/types/types";
-import { mockRequirements, auditChecks } from "@/mocks/data";
+import { analyzeDocument, generateSupervisionResponse } from "@/api/supervision";
 
 export function SupervisionResponseModule() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+  const [analysisId, setAnalysisId] = useState<string | null>(null);
+  const [requirements, setRequirements] = useState<DocumentRequirement[]>([]);
+  const [auditChecks, setAuditChecks] = useState<AuditCheck[]>([]);
+  const [documentInfo, setDocumentInfo] = useState<{ sender: string; number: string; date: string; deadline: string } | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [generatedResponse, setGeneratedResponse] = useState<string>("");
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFileUpload = () => {
-    setUploadedFile("predpisanie_gji_45_2024.pdf");
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setError(null);
+    setUploadedFile(file.name);
     setIsAnalyzing(true);
-    // TODO: заменить на вызов api.analyzeDocument() при подключении бэкенда
-    setTimeout(() => {
-      setIsAnalyzing(false);
+    setAnalysisComplete(false);
+    setGeneratedResponse("");
+    try {
+      const result = await analyzeDocument(file);
+      setAnalysisId(result.id);
+      setRequirements(result.requirements);
+      setAuditChecks(result.auditChecks);
+      setDocumentInfo(result.documentInfo);
       setAnalysisComplete(true);
-    }, 2000);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Не удалось проанализировать документ.";
+      setError(message);
+      setUploadedFile(null);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
-  const handleGenerateResponse = () => {
-    // TODO: заменить на вызов api.generateSupervisionResponse() при подключении бэкенда
-    const response = `В Управление Государственного жилищного надзора Московской области
+  const handleGenerateResponse = async () => {
+    if (!analysisId) return;
+    setError(null);
+    setIsGenerating(true);
+    try {
+      const { response } = await generateSupervisionResponse(analysisId);
+      setGeneratedResponse(response);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Не удалось сгенерировать ответ.";
+      setError(message);
+      alert(message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
-
-Исх. № 156 от ${new Date().toLocaleDateString("ru-RU")}
-
-
-На предписание от 10.01.2024 № 45-2024
-
-
-Управляющая организация ООО "УК ЖилКомфорт", действующая на основании лицензии № 12345, 
-в соответствии с Федеральным законом от 21.07.1997 № 116-ФЗ «О промышленной безопасности...», 
-сообщает следующее.
-
-
-В предписании от 10.01.2024 № 45-2024 содержится требование об устранении нарушений 
-температурного режима в жилом доме по адресу: г. Москва, ул. Ленина, д. 15.
-
-
-Сообщаем, что в установленный законом срок нарушения были устранены. 
-
-
-В соответствии с пунктом 15 Постановления Правительства РФ от 06.05.2011 № 354 
-"О предоставлении коммунальных услуг собственникам и пользователям помещений..." 
-исполнитель обязан обеспечить надлежащее качество коммунальных услуг.
-
-
-Акт проверки качества коммунальной услуги от 15.01.2024 подтверждает, 
-что температура в жилых помещениях соответствует нормативным значениям 
-(не ниже +20°С для жилых комнат).
-
-
-На основании изложенного, руководствуясь статьями 4, 10 Федерального закона 
-от 26.12.2008 № 294-ФЗ, просим considers предписание исполненным.
-
-
-Приложения:
-1. Акт проверки от 15.01.2024 - 1 л.
-2. Акт выполненных работ - 1 л.
-3. Выписка из журнала учета обращений - 1 л.
-
-
-Генеральный директор _______________ Иванов И.И.
-
-
-М.П.`;
-
-    setGeneratedResponse(response);
+  const handleReset = () => {
+    setUploadedFile(null);
+    setAnalysisId(null);
+    setRequirements([]);
+    setAuditChecks([]);
+    setDocumentInfo(null);
+    setAnalysisComplete(false);
+    setGeneratedResponse("");
+    setError(null);
   };
 
   const handleCopy = () => {
@@ -116,16 +114,23 @@ export function SupervisionResponseModule() {
               Загрузка документа
             </h3>
 
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.docx,.txt"
+              className="hidden"
+              onChange={handleFileSelect}
+            />
             {!uploadedFile ? (
               <div
-                onClick={handleFileUpload}
+                onClick={() => fileInputRef.current?.click()}
                 className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-emerald-400 hover:bg-emerald-50/50 transition-all cursor-pointer"
               >
                 <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <FileText className="w-8 h-8 text-emerald-600" />
                 </div>
                 <p className="font-medium text-slate-900 mb-1">Загрузите предписание или запрос</p>
-                <p className="text-sm text-slate-500">PDF, DOCX до 10 МБ</p>
+                <p className="text-sm text-slate-500">PDF, DOCX, TXT до 10 МБ</p>
               </div>
             ) : (
               <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
@@ -135,21 +140,25 @@ export function SupervisionResponseModule() {
                   </div>
                   <div className="flex-1">
                     <p className="font-medium text-slate-900">{uploadedFile}</p>
-                    <p className="text-sm text-slate-500">PDF, 2.4 МБ • Загружено</p>
+                    <p className="text-sm text-slate-500">Загружено</p>
                   </div>
                   <button
-                    onClick={() => { setUploadedFile(null); setAnalysisComplete(false); setGeneratedResponse(""); }}
+                    onClick={handleReset}
                     className="p-2 text-slate-400 hover:text-red-600 transition-colors"
+                    title="Удалить и загрузить другой"
                   >
                     <AlertCircle className="w-5 h-5" />
                   </button>
                 </div>
               </div>
             )}
+            {error && (
+              <p className="mt-2 text-sm text-red-600">{error}</p>
+            )}
           </div>
 
           {/* Document Info */}
-          {uploadedFile && (
+          {uploadedFile && documentInfo && (
             <div className="bg-white rounded-xl border border-slate-200 p-6">
               <h3 className="font-medium text-slate-900 mb-4">Информация о документе</h3>
               <div className="space-y-3">
@@ -157,28 +166,28 @@ export function SupervisionResponseModule() {
                   <Building2 className="w-5 h-5 text-slate-400" />
                   <div>
                     <p className="text-sm text-slate-500">Отправитель</p>
-                    <p className="font-medium text-slate-900">ГЖИ Московской области</p>
+                    <p className="font-medium text-slate-900">{documentInfo.sender}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <Hash className="w-5 h-5 text-slate-400" />
                   <div>
                     <p className="text-sm text-slate-500">Номер</p>
-                    <p className="font-medium text-slate-900">45-2024</p>
+                    <p className="font-medium text-slate-900">{documentInfo.number}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <Calendar className="w-5 h-5 text-slate-400" />
                   <div>
                     <p className="text-sm text-slate-500">Дата</p>
-                    <p className="font-medium text-slate-900">10 января 2024</p>
+                    <p className="font-medium text-slate-900">{documentInfo.date}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <Clock className="w-5 h-5 text-slate-400" />
                   <div>
                     <p className="text-sm text-slate-500">Срок ответа</p>
-                    <p className="font-medium text-amber-700">до 30 января 2024 (10 дней)</p>
+                    <p className="font-medium text-amber-700">{documentInfo.deadline}</p>
                   </div>
                 </div>
               </div>
@@ -189,10 +198,23 @@ export function SupervisionResponseModule() {
           {analysisComplete && !generatedResponse && (
             <button
               onClick={handleGenerateResponse}
-              className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-emerald-200 transition-all flex items-center justify-center gap-2"
+              disabled={isGenerating}
+              className={cn(
+                "w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-emerald-200 transition-all flex items-center justify-center gap-2",
+                isGenerating && "opacity-70 cursor-not-allowed"
+              )}
             >
-              <FileCheck className="w-5 h-5" />
-              Сгенерировать ответ
+              {isGenerating ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Генерация...
+                </>
+              ) : (
+                <>
+                  <FileCheck className="w-5 h-5" />
+                  Сгенерировать ответ
+                </>
+              )}
             </button>
           )}
         </div>
@@ -224,7 +246,7 @@ export function SupervisionResponseModule() {
                   Выявленные требования
                 </h3>
                 <div className="space-y-3">
-                  {mockRequirements.map((req) => (
+                  {requirements.map((req) => (
                     <div
                       key={req.id}
                       className={cn(
@@ -267,7 +289,7 @@ export function SupervisionResponseModule() {
                   Проверка на риски
                 </h3>
                 <div className="space-y-2">
-                  {auditChecks.map((check) => (
+                  {auditChecks.map((check: AuditCheck) => (
                     <div key={check.id} className="flex items-center justify-between py-2">
                       <span className="text-sm text-slate-700">{check.check}</span>
                       <div className="flex items-center gap-2">

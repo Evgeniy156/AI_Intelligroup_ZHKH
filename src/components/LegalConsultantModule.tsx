@@ -148,36 +148,61 @@ export function LegalConsultantModule() {
                 )}
 
                 {activeTab === "sources" && (
-                  <div className="space-y-3">
-                    {sources.map((source) => (
-                      <div
-                        key={source.id}
-                        className="p-4 bg-slate-50 rounded-lg border border-slate-200 hover:border-indigo-300 transition-colors"
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            {source.type === "law" && <BookOpen className="w-4 h-4 text-blue-600" />}
-                            {source.type === "practice" && <Gavel className="w-4 h-4 text-violet-600" />}
-                            <span className="font-medium text-slate-900">{source.title}</span>
-                          </div>
-                          <span className="text-xs text-slate-500">{source.citation}</span>
-                        </div>
-                        <p className="text-sm text-slate-600 mb-2">{source.content}</p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="w-20 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-indigo-500 rounded-full"
-                                style={{ width: `${source.relevance * 100}%` }}
-                              />
+                  <div className="space-y-4">
+                    {sources.length > 0 ? (
+                      sources.map((source) => (
+                        <div
+                          key={source.id}
+                          className="p-5 bg-white rounded-xl border border-slate-200 hover:border-indigo-400 hover:shadow-md transition-all group"
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className={cn(
+                                "w-10 h-10 rounded-lg flex items-center justify-center",
+                                source.type === "law" ? "bg-blue-50 text-blue-600" : "bg-violet-50 text-violet-600"
+                              )}>
+                                {source.type === "law" ? <BookOpen className="w-5 h-5" /> : <Gavel className="w-5 h-5" />}
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                                  {source.title}
+                                </h4>
+                                <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded uppercase">
+                                  {source.citation || "Нормативный акт"}
+                                </span>
+                              </div>
                             </div>
-                            <span className="text-xs text-slate-500">
-                              Релевантность: {(source.relevance * 100).toFixed(0)}%
-                            </span>
+                            <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
+                              <ExternalLink className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="p-3 bg-slate-50 rounded-lg mb-3">
+                            <p className="text-sm text-slate-600 italic leading-relaxed">
+                              "{source.content}"
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                                <div
+                                  className="h-full bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full"
+                                  style={{ width: `${source.relevance * 100}%` }}
+                                />
+                              </div>
+                              <span className="text-xs font-bold text-indigo-600">
+                                {(source.relevance * 100).toFixed(0)}% совпадение
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-slate-400 font-mono">ID: {source.id}</span>
                           </div>
                         </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                        <Scale className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                        <p className="text-slate-500">Источники не найдены</p>
                       </div>
-                    ))}
+                    )}
                   </div>
                 )}
 
