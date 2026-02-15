@@ -1,6 +1,7 @@
 import httpx
 from typing import List, Optional
-from sqlalchemy import select, text
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..models.models import DocumentChunk
 from ..config import settings
@@ -24,13 +25,14 @@ class RAGService:
     ) -> List[DocumentChunk]:
         """
         Поиск наиболее релевантных кусков текста в векторной БД.
+        Возвращает только чанки с заполненным embedding (защита от NULL).
         """
         query_vector = await self.get_embeddings(query)
         
-        # SQL-запрос с использованием оператора <=> (cosine distance) из pgvector
-        # Мы используем строковый запрос, так как pgvector операторы специфичны для Postgres
         stmt = (
             select(DocumentChunk)
+            .where(DocumentChunk.embedding.isnot(None))
+            .options(selectinload(DocumentChunk.document))
             .order_by(DocumentChunk.embedding.cosine_distance(query_vector))
             .limit(limit)
         )

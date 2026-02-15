@@ -7,3 +7,5 @@ python-multipart
 python-dotenv
 httpx
 pgvector
+PyPDF2
+python-docx

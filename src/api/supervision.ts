@@ -1,9 +1,11 @@
 import { post, uploadFile } from "./client";
 import type { AnalysisResult } from "@/types/types";
 
+export type AnalysisResultWithId = AnalysisResult & { id: string };
+
 /** Загрузка и анализ документа надзорного органа */
-export function analyzeDocument(file: File): Promise<AnalysisResult> {
-    return uploadFile<AnalysisResult>("/api/v1/supervision/analyze", file);
+export function analyzeDocument(file: File): Promise<AnalysisResultWithId> {
+    return uploadFile<AnalysisResultWithId>("/api/v1/supervision/analyze", file);
 }
 
 /** Генерация ответа надзорному органу */

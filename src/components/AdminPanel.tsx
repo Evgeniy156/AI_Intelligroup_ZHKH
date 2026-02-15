@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Settings,
   Users,
@@ -15,11 +15,14 @@ import {
   CheckCircle2,
   AlertCircle,
   Activity,
-  Brain
+  Brain,
+  BookOpen,
+  Upload
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import type { User } from "@/types/types";
 import { mockUsers, defaultLLMSettings } from "@/mocks/data";
+import { getDocuments, uploadDocument, type DocumentItem } from "@/api/documents";
 
 const tabs = [
   { id: "general", label: "Общие", icon: Settings },
@@ -27,11 +30,55 @@ const tabs = [
   { id: "llm", label: "LLM Настройки", icon: Cpu },
   { id: "security", label: "Безопасность", icon: Shield },
   { id: "system", label: "Система", icon: Database },
+  { id: "knowledge", label: "База знаний", icon: BookOpen },
 ];
 
 export function AdminPanel() {
   const [activeTab, setActiveTab] = useState("general");
   const [users] = useState<User[]>(mockUsers);
+  const [documents, setDocuments] = useState<DocumentItem[]>([]);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [documentsError, setDocumentsError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const loadDocuments = async () => {
+    setDocumentsLoading(true);
+    setDocumentsError(null);
+    try {
+      const list = await getDocuments();
+      setDocuments(list);
+    } catch (e) {
+      setDocumentsError(e instanceof Error ? e.message : "Не удалось загрузить список документов.");
+      setDocuments([]);
+    } finally {
+      setDocumentsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "knowledge") {
+      loadDocuments();
+    }
+  }, [activeTab]);
+
+  const handleUploadClick = () => fileInputRef.current?.click();
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setUploading(true);
+    setDocumentsError(null);
+    try {
+      await uploadDocument(file);
+      await loadDocuments();
+    } catch (err) {
+      setDocumentsError(err instanceof Error ? err.message : "Ошибка загрузки документа.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -407,6 +454,88 @@ export function AdminPanel() {
                   ))}
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === "knowledge" && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-slate-900">База знаний</h3>
+                <div className="flex items-center gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.docx,.txt"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                  <button
+                    onClick={handleUploadClick}
+                    disabled={uploading}
+                    className={cn(
+                      "px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2",
+                      uploading && "opacity-70 cursor-not-allowed"
+                    )}
+                  >
+                    {uploading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Загрузка...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4" />
+                        Загрузить документ
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+              <p className="text-sm text-slate-500">PDF, DOCX, TXT. Документы используются в модуле «Юридический консультант».</p>
+              {documentsError && (
+                <p className="text-sm text-red-600">{documentsError}</p>
+              )}
+              {documentsLoading ? (
+                <div className="flex items-center gap-2 py-8 text-slate-500">
+                  <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+                  Загрузка списка...
+                </div>
+              ) : (
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-slate-200">
+                      <th className="text-left text-sm font-medium text-slate-500 pb-3">Файл</th>
+                      <th className="text-left text-sm font-medium text-slate-500 pb-3">Тип</th>
+                      <th className="text-left text-sm font-medium text-slate-500 pb-3">Дата</th>
+                      <th className="text-left text-sm font-medium text-slate-500 pb-3">Статус</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {documents.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="py-8 text-center text-slate-500 text-sm">
+                          Нет документов. Загрузите PDF, DOCX или TXT.
+                        </td>
+                      </tr>
+                    ) : (
+                      documents.map((doc) => (
+                        <tr key={doc.id} className="border-b border-slate-100">
+                          <td className="py-3 text-sm font-medium text-slate-900">{doc.filename}</td>
+                          <td className="py-3 text-sm text-slate-600">{doc.file_type || "—"}</td>
+                          <td className="py-3 text-sm text-slate-500">
+                            {doc.created_at ? new Date(doc.created_at).toLocaleString("ru-RU") : "—"}
+                          </td>
+                          <td className="py-3">
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-700">
+                              Обработан
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              )}
             </div>
           )}
         </div>
